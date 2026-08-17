@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>七夕快乐�</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #fce4ec;
+      color: #8b5a7a;
+      user-select: none;
+    }
+
+    .page {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      background: linear-gradient(180deg, #fde2e8 0%, #f8c8d8 40%, #f4b6c8 70%, #f0a8bc 100%);
+      overflow: hidden;
+    }
+
+    /* 顶部标题栏 */
+    .header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding-top: env(safe-area-inset-top);
+    }
+
+    .back-btn {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding-top: env(safe-area-inset-top);
+    }
+
+    .back-btn::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-left: 2px solid #c2185b;
+      border-bottom: 2px solid #c2185b;
+      transform: rotate(45deg);
+    }
+
+    .header-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #c2185b;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 8px rgba(255, 182, 193, 0.6);
+    }
+
+    .header-title .heart-icon {
+      margin: 0 4px;
+    }
+
+    .music-btn {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 60;
+      padding-top: env(safe-area-inset-top);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 8px rgba(255, 105, 135, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    .music-btn.playing {
+      animation: musicRotate 3s linear infinite;
+      background: rgba(255, 182, 193, 0.6);
+    }
+
+    @keyframes musicRotate {
+      from { transform: translateY(-50%) rotate(0deg); }
+      to { transform: translateY(-50%) rotate(360deg); }
+    }
+
+    .music-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: #c2185b;
+    }
+
+    /* 分享按钮 */
+    .share-btn {
+      position: absolute;
+      left: 56px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 60;
+      padding-top: env(safe-area-inset-top);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 8px rgba(255, 105, 135, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    .share-btn:active {
+      transform: translateY(-50%) scale(0.92);
+    }
+
+    .share-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: #c2185b;
+    }
+
+    /* 中央大爱心背景 */
+    .center-heart {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -55%);
+      width: 75%;
+      height: 50%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .center-heart svg {
+      width: 100%;
+      height: 100%;
+      fill: #e91e63;
+      opacity: 0.35;
+      filter: blur(18px);
+      animation: heartPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes heartPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+
+    /* 弹幕容器 */
+    .danmu-container {
+      position: absolute;
+      top: 60px;
+      left: 0;
+      right: 0;
+      bottom: 200px;
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    .danmu-item {
+      position: absolute;
+      white-space: nowrap;
+      font-weight: 500;
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+
+    .danmu-small {
+      font-size: 14px;
+      color: rgba(194, 24, 91, 0.7);
+    }
+
+    .danmu-medium {
+      font-size: 18px;
+      color: rgba(194, 24, 91, 0.85);
+    }
+
+    .danmu-large {
+      font-size: 22px;
+      font-weight: 600;
+      color: #c2185b;
+    }
+
+    .danmu-hot {
+      font-size: 28px;
+      font-weight: 700;
+      color: #c2185b;
+      text-shadow: 0 2px 8px rgba(255, 105, 135, 0.5), 0 0 20px rgba(255, 182, 193, 0.6);
+    }
+
+    /* 飘动心形 */
+    .floating-hearts {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 15;
+      overflow: hidden;
+    }
+
+    .floating-heart {
+      position: absolute;
+      bottom: -40px;
+      opacity: 0;
+      animation: floatUp linear forwards;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(-120vh) translateX(var(--drift, 0px)) rotate(var(--rotate, 20deg));
+        opacity: 0;
+      }
+    }
+
+    /* 心电图 */
+    .ecg-container {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 130px;
+      height: 100px;
+      z-index: 20;
+      overflow: hidden;
+      opacity: 0.8;
+    }
+
+    .ecg-svg {
+      width: 200%;
+      height: 100%;
+      animation: ecgScroll 4s linear infinite;
+    }
+
+    @keyframes ecgScroll {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* 底部提示文字 */
+    .bottom-tip {
+      position: absolute;
+      bottom: 16px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      z-index: 50;
+      padding-bottom: env(safe-area-inset-bottom);
+      font-size: 12px;
+      color: rgba(194, 24, 91, 0.5);
+      letter-spacing: 1px;
+    }
+
+    /* 分享弹窗 */
+    .share-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 24px;
+    }
+
+    .share-overlay.show {
+      display: flex;
+    }
+
+    .share-modal {
+      width: 100%;
+      max-width: 340px;
+      background: linear-gradient(160deg, #fff5f7 0%, #ffe4ec 100%);
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid rgba(255, 182, 193, 0.5);
+      animation: modalIn 0.3s ease;
+      text-align: center;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .share-modal h3 {
+      font-size: 18px;
+      color: #c2185b;
+      margin-bottom: 12px;
+    }
+
+    .share-modal p {
+      font-size: 14px;
+      color: #d4668c;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .share-link-box {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 182, 193, 0.4);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #8b5a7a;
+      word-break: break-all;
+      margin-bottom: 16px;
+      max-height: 60px;
+      overflow-y: auto;
+    }
+
+    .share-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .share-actions button {
+      width: 100%;
+      height: 44px;
+      border-radius: 22px;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .share-actions button:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ff6fa5 0%, #e91e63 100%);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(233, 30, 99, 0.35);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.8);
+      color: #c2185b;
+      border: 1px solid rgba(255, 182, 193, 0.6);
+    }
+
+    .btn-close {
+      background: transparent;
+      color: #d4668c;
+      font-size: 13px;
+      height: 36px;
+      margin-top: 6px;
+    }
+
+    /* 提示 */
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: rgba(0, 0, 0, 0.75);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  </style>
+</head>
+<body>
+  <div class="page" id="page">
+    <!-- 顶部 -->
+    <div class="header">
+      <div class="back-btn" id="backBtn"></div>
+      <div class="share-btn" id="shareBtn" title="分享给朋友">
+        <svg viewBox="0 0 24 24">
+          <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
+        </svg>
+      </div>
+      <div class="header-title">
+        <span class="heart-icon">💗</span>
+        七夕快乐
+        <span class="heart-icon">💗</span>
+      </div>
+      <div class="music-btn" id="musicBtn">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- 中央大爱心背景 -->
+    <div class="center-heart">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+      </svg>
+    </div>
+
+    <!-- 飘动的心形 -->
+    <div class="floating-hearts" id="floatingHearts"></div>
+
+    <!-- 弹幕容器 -->
+    <div class="danmu-container" id="danmuContainer"></div>
+
+    <!-- 心电图 -->
+    <div class="ecg-container">
+      <svg class="ecg-svg" viewBox="0 0 1000 120" preserveAspectRatio="none">
+        <path id="ecgPath1" fill="none" stroke="#e91e63" stroke-width="2" />
+        <path id="ecgPath2" fill="none" stroke="#f06292" stroke-width="1.5" opacity="0.45" />
+      </svg>
+    </div>
+
+    <!-- 底部提示 -->
+    <div class="bottom-tip">❤ 愿每个美好的你都被温柔以待 ❤</div>
+  </div>
+
+  <!-- 分享弹窗 -->
+  <div class="share-overlay" id="shareOverlay">
+    <div class="share-modal">
+      <h3>� 分享给朋友</h3>
+      <p>把这个浪漫七夕祝福分享给TA吧~<br>点击下方按钮即可发送</p>
+      <div class="share-link-box" id="shareLinkBox"></div>
+      <div class="share-actions">
+        <button class="btn-primary" id="nativeShareBtn">
+          <span>📤</span> 发送给朋友
+        </button>
+        <button class="btn-secondary" id="copyLinkBtn">
+          <span>📋</span> 复制链接
+        </button>
+        <button class="btn-close" id="closeShareBtn">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 提示 -->
+  <div class="toast" id="toast">已复制 �</div>
+
+  <!-- 背景音乐（请将音乐文件放在同目录下，文件名改为 bgm.mp3） -->
+  <audio id="bgm" loop preload="auto">
+    <source src="bgm.mp3" type="audio/mpeg">
+    您的浏览器不支持音频播放
+  </audio>
+
+  <script>
+    // ========== 弹幕文案（每行一条） ==========
+    const danmuList = [
+      { text: '💗七夕快乐💗', size: 'hot' },
+      { text: '💜', size: 'medium' },
+      { text: '长日欢喜 四季与你', size: 'large' },
+      { text: '💙', size: 'medium' },
+      { text: '你要快乐呀', size: 'medium' },
+      { text: '天天开心', size: 'small' },
+      { text: '💛', size: 'medium' },
+      { text: '愿你常安 万事顺意', size: 'medium' },
+      { text: '平安喜乐 得偿所愿', size: 'large' },
+      { text: '💖', size: 'medium' },
+      { text: '晚风温柔 好运常赴', size: 'medium' },
+      { text: '岁岁无忧 自在欢喜', size: 'medium' },
+      { text: '所遇皆甜 万事可期', size: 'medium' },
+      { text: '星河漫漫 与你安暖', size: 'medium' },
+      { text: '越来越可爱', size: 'small' },
+    ];
+
+    const heartColors = [
+      '#e91e63',
+      '#ec407a',
+      '#f06292',
+      '#f48fb1',
+      '#f8bbd0',
+      '#d81b60',
+      '#c2185b',
+    ];
+
+    let danmuTimer = null;
+    let heartTimer = null;
+
+    // ========== DOM ==========
+    const danmuContainer = document.getElementById('danmuContainer');
+    const floatingHearts = document.getElementById('floatingHearts');
+    const musicBtn = document.getElementById('musicBtn');
+    const backBtn = document.getElementById('backBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const shareOverlay = document.getElementById('shareOverlay');
+    const nativeShareBtn = document.getElementById('nativeShareBtn');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+    const closeShareBtn = document.getElementById('closeShareBtn');
+    const shareLinkBox = document.getElementById('shareLinkBox');
+    const toast = document.getElementById('toast');
+    const bgm = document.getElementById('bgm');
+
+    // ========== 背景音乐 ==========
+    let isMusicPlaying = false;
+
+    function toggleMusic() {
+      if (isMusicPlaying) {
+        bgm.pause();
+        musicBtn.classList.remove('playing');
+      } else {
+        bgm.play().then(() => {
+          musicBtn.classList.add('playing');
+        }).catch(() => {
+          showToast('暂无背景音乐 💗');
+        });
+      }
+      isMusicPlaying = !isMusicPlaying;
+    }
+
+    musicBtn.addEventListener('click', toggleMusic);
+
+    function playMusic() {
+      if (!isMusicPlaying) {
+        bgm.play().then(() => {
+          musicBtn.classList.add('playing');
+          isMusicPlaying = true;
+        }).catch(() => {});
+      }
+    }
+
+    // ========== 弹幕逻辑 ==========
+    function getRandomSize() {
+      const r = Math.random();
+      if (r < 0.4) return 'small';
+      if (r < 0.75) return 'medium';
+      if (r < 0.95) return 'large';
+      return 'hot';
+    }
+
+    function createDanmu() {
+      const item = danmuList[Math.floor(Math.random() * danmuList.length)];
+      const el = document.createElement('div');
+      const sizeType = item.size || getRandomSize();
+      el.className = 'danmu-item danmu-' + sizeType;
+      el.textContent = item.text;
+
+      const containerHeight = danmuContainer.offsetHeight;
+      const top = Math.random() * (containerHeight - 40) + 10;
+      el.style.top = top + 'px';
+
+      const fromRight = Math.random() > 0.25;
+      const duration = 8000 + Math.random() * 8000;
+
+      if (fromRight) {
+        el.style.right = '-100%';
+        el.style.left = 'auto';
+        el.style.animation = `danmuMoveLeft ${duration}ms linear forwards`;
+      } else {
+        el.style.left = '-100%';
+        el.style.right = 'auto';
+        el.style.animation = `danmuMoveRight ${duration}ms linear forwards`;
+      }
+
+      danmuContainer.appendChild(el);
+
+      setTimeout(() => {
+        el.remove();
+      }, duration + 600);
+    }
+
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = `
+      @keyframes danmuMoveLeft {
+        0% { transform: translateX(0); opacity: 0; }
+        5% { opacity: 1; }
+        95% { opacity: 1; }
+        100% { transform: translateX(-200vw); opacity: 0; }
+      }
+      @keyframes danmuMoveRight {
+        0% { transform: translateX(0); opacity: 0; }
+        5% { opacity: 1; }
+        95% { opacity: 1; }
+        100% { transform: translateX(200vw); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(styleSheet);
+
+    function startDanmu() {
+      for (let i = 0; i < 6; i++) {
+        setTimeout(createDanmu, i * 300);
+      }
+      danmuTimer = setInterval(createDanmu, 600 + Math.random() * 400);
+    }
+
+    // ========== 飘动心形 ==========
+    function createFloatingHeart() {
+      const heart = document.createElement('div');
+      heart.className = 'floating-heart';
+      const size = 14 + Math.random() * 24;
+      const color = heartColors[Math.floor(Math.random() * heartColors.length)];
+      const duration = 6000 + Math.random() * 6000;
+      const drift = (Math.random() - 0.5) * 120;
+      const rotate = (Math.random() - 0.5) * 40;
+      const left = Math.random() * 96 + 2;
+
+      heart.innerHTML = `
+        <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${color}">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      `;
+      heart.style.left = left + '%';
+      heart.style.setProperty('--drift', drift + 'px');
+      heart.style.setProperty('--rotate', rotate + 'deg');
+      heart.style.animationDuration = duration + 'ms';
+
+      floatingHearts.appendChild(heart);
+      setTimeout(() => heart.remove(), duration + 300);
+    }
+
+    function startFloatingHearts() {
+      for (let i = 0; i < 8; i++) {
+        setTimeout(createFloatingHeart, i * 400);
+      }
+      heartTimer = setInterval(createFloatingHeart, 500 + Math.random() * 400);
+    }
+
+    // ========== 心电图 ==========
+    function generateEcgPath() {
+      let d = '';
+      const totalWidth = 1000;
+      const segments = 20;
+      const segW = totalWidth / segments;
+      let y = 60;
+
+      for (let i = 0; i < segments; i++) {
+        const xStart = i * segW;
+        d += ` M ${xStart} ${y} L ${xStart + segW * 0.3} ${y}`;
+        d += ` L ${xStart + segW * 0.35} ${y - 6}`;
+        d += ` L ${xStart + segW * 0.4} ${y}`;
+        d += ` L ${xStart + segW * 0.45} ${y - 35}`;
+        d += ` L ${xStart + segW * 0.5} ${y + 22}`;
+        d += ` L ${xStart + segW * 0.55} ${y - 12}`;
+        d += ` L ${xStart + segW * 0.6} ${y}`;
+        d += ` L ${xStart + segW} ${y}`;
+      }
+      return d;
+    }
+
+    function initEcg() {
+      const p1 = generateEcgPath();
+      document.getElementById('ecgPath1').setAttribute('d', p1);
+      document.getElementById('ecgPath2').setAttribute('d', p1);
+    }
+
+    // ========== 提示 ==========
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    // ========== 分享功能 ==========
+    function getShareUrl() {
+      return window.location.href;
+    }
+
+    async function doNativeShare() {
+      const shareData = {
+        title: '七夕快乐💗',
+        text: '送你一份七夕祝福，愿你被温柔以待~',
+        url: window.location.href,
+      };
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+          showToast('分享成功 �');
+        } else {
+          showToast('请长按链接复制后分享');
+          copyToClipboard(window.location.href);
+        }
+      } catch (err) {
+        // 用户取消
+      }
+    }
+
+    function copyToClipboard(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('链接已复制 💝');
+        }).catch(() => {
+          fallbackCopy(text);
+        });
+      } else {
+        fallbackCopy(text);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast('链接已复制 💝');
+      } catch (e) {
+        showToast('复制失败，请手动复制');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    function openShareModal() {
+      const url = getShareUrl();
+      shareLinkBox.textContent = url;
+
+      // 检测是否支持原生分享
+      if (navigator.share) {
+        nativeShareBtn.style.display = 'flex';
+      } else {
+        nativeShareBtn.style.display = 'none';
+      }
+
+      shareOverlay.classList.add('show');
+    }
+
+    shareBtn.addEventListener('click', openShareModal);
+    nativeShareBtn.addEventListener('click', doNativeShare);
+    copyLinkBtn.addEventListener('click', () => {
+      copyToClipboard(getShareUrl());
+    });
+    closeShareBtn.addEventListener('click', () => {
+      shareOverlay.classList.remove('show');
+    });
+    shareOverlay.addEventListener('click', (e) => {
+      if (e.target === shareOverlay) {
+        shareOverlay.classList.remove('show');
+      }
+    });
+
+    // 返回按钮
+    backBtn.addEventListener('click', () => {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        showToast('已经是首页了');
+      }
+    });
+
+    // ========== 初始化 ==========
+    initEcg();
+    startDanmu();
+    startFloatingHearts();
+
+    // 首次交互自动播放音乐
+    function firstInteraction() {
+      if (!isMusicPlaying) {
+        playMusic();
+      }
+      document.removeEventListener('touchstart', firstInteraction);
+      document.removeEventListener('click', firstInteraction);
+    }
+    document.addEventListener('touchstart', firstInteraction, { once: true });
+    document.addEventListener('click', firstInteraction, { once: true });
+  </script>
+</body>
+</html>
