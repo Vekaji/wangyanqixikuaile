@@ -194,8 +194,7 @@
       opacity: 0;
       will-change: transform, opacity;
       color: #fff;
-      -webkit-text-stroke: 1px rgba(255, 105, 180, 0.9);
-      paint-order: stroke fill;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     }
 
     .danmu-small {
@@ -214,12 +213,10 @@
     .danmu-hot {
       font-size: 28px;
       font-weight: 700;
-      -webkit-text-stroke: 1.2px rgba(255, 105, 180, 1);
       text-shadow: 0 2px 8px rgba(255, 105, 135, 0.5), 0 0 20px rgba(255, 182, 193, 0.8);
     }
 
     .danmu-heart {
-      -webkit-text-stroke: 0;
     }
 
     /* 飘动心形 */
@@ -647,11 +644,50 @@
     `;
     document.head.appendChild(styleSheet);
 
+    // 藏头诗弹幕（最先阶梯式出现）
+    const acrosticList = [
+      { text: '祝愿清风伴锦年', size: 'large' },
+      { text: '汪涵温雅自嫣然', size: 'large' },
+      { text: '彦姿如月芳华绽', size: 'large' },
+      { text: '七夕良辰知清欢', size: 'large' },
+      { text: '夕渡星河携吉至', size: 'large' },
+      { text: '快揽温柔岁岁安', size: 'large' },
+      { text: '乐拥好梦福常绵', size: 'large' },
+    ];
+
+    function createSpecificDanmu(item, topPercent) {
+      const el = document.createElement('div');
+      el.className = 'danmu-item danmu-' + (item.size || 'large');
+      el.textContent = item.text;
+
+      const containerHeight = danmuContainer.offsetHeight;
+      el.style.top = (containerHeight * topPercent) + 'px';
+      el.style.right = '-100%';
+      el.style.left = 'auto';
+
+      const duration = 12000;
+      el.style.animation = `danmuMoveLeft ${duration}ms linear forwards`;
+
+      danmuContainer.appendChild(el);
+      setTimeout(() => el.remove(), duration + 600);
+    }
+
     function startDanmu() {
-      for (let i = 0; i < 10; i++) {
-        setTimeout(createDanmu, i * 200);
-      }
-      danmuTimer = setInterval(createDanmu, 300 + Math.random() * 200);
+      // 第一阶段：藏头诗阶梯式出现
+      acrosticList.forEach((item, i) => {
+        setTimeout(() => {
+          const topPercent = 0.15 + i * 0.1;
+          createSpecificDanmu(item, topPercent);
+        }, i * 500);
+      });
+
+      // 第二阶段：1秒后开始自由弹幕
+      setTimeout(() => {
+        for (let i = 0; i < 6; i++) {
+          setTimeout(createDanmu, i * 250);
+        }
+        danmuTimer = setInterval(createDanmu, 300 + Math.random() * 200);
+      }, 1000);
     }
 
     // ========== 飘动心形 ==========
