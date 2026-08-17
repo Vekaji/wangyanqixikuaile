@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>七夕快乐�</title>
+  <title>汪 · 七夕快乐 · 彦</title>
   <style>
     * {
       margin: 0;
@@ -193,29 +193,33 @@
       font-weight: 500;
       opacity: 0;
       will-change: transform, opacity;
+      color: #fff;
+      -webkit-text-stroke: 1px rgba(255, 105, 180, 0.9);
+      paint-order: stroke fill;
     }
 
     .danmu-small {
       font-size: 14px;
-      color: rgba(194, 24, 91, 0.7);
     }
 
     .danmu-medium {
       font-size: 18px;
-      color: rgba(194, 24, 91, 0.85);
     }
 
     .danmu-large {
       font-size: 22px;
       font-weight: 600;
-      color: #c2185b;
     }
 
     .danmu-hot {
       font-size: 28px;
       font-weight: 700;
-      color: #c2185b;
-      text-shadow: 0 2px 8px rgba(255, 105, 135, 0.5), 0 0 20px rgba(255, 182, 193, 0.6);
+      -webkit-text-stroke: 1.2px rgba(255, 105, 180, 1);
+      text-shadow: 0 2px 8px rgba(255, 105, 135, 0.5), 0 0 20px rgba(255, 182, 193, 0.8);
+    }
+
+    .danmu-heart {
+      -webkit-text-stroke: 0;
     }
 
     /* 飘动心形 */
@@ -431,11 +435,7 @@
           <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
         </svg>
       </div>
-      <div class="header-title">
-        <span class="heart-icon">💗</span>
-        七夕快乐
-        <span class="heart-icon">💗</span>
-      </div>
+      <div class="header-title">汪 · 七夕快乐 · 彦</div>
       <div class="music-btn" id="musicBtn">
         <svg viewBox="0 0 24 24">
           <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
@@ -499,20 +499,31 @@
     // ========== 弹幕文案（每行一条） ==========
     const danmuList = [
       { text: '💗七夕快乐💗', size: 'hot' },
-      { text: '💜', size: 'medium' },
+      { text: '💜', size: 'medium', isHeart: true },
       { text: '长日欢喜 四季与你', size: 'large' },
-      { text: '💙', size: 'medium' },
+      { text: '💙', size: 'medium', isHeart: true },
       { text: '你要快乐呀', size: 'medium' },
       { text: '天天开心', size: 'small' },
-      { text: '💛', size: 'medium' },
+      { text: '💛', size: 'medium', isHeart: true },
       { text: '愿你常安 万事顺意', size: 'medium' },
-      { text: '平安喜乐 得偿所愿', size: 'large' },
-      { text: '💖', size: 'medium' },
+      { text: '💖', size: 'medium', isHeart: true },
       { text: '晚风温柔 好运常赴', size: 'medium' },
-      { text: '岁岁无忧 自在欢喜', size: 'medium' },
-      { text: '所遇皆甜 万事可期', size: 'medium' },
       { text: '星河漫漫 与你安暖', size: 'medium' },
       { text: '越来越可爱', size: 'small' },
+      { text: '祝愿清风伴锦年', size: 'large' },
+      { text: '汪涵温雅自嫣然', size: 'large' },
+      { text: '彦姿如月芳华绽', size: 'large' },
+      { text: '七夕良辰知清欢', size: 'large' },
+      { text: '夕渡星河携吉至', size: 'large' },
+      { text: '快揽温柔岁岁安', size: 'large' },
+      { text: '乐拥好梦福常绵', size: 'large' },
+    ];
+
+    // 爱心弹幕的多样颜色
+    const heartDanmuColors = [
+      '#ff4d6d', '#ff6b9d', '#c77dff', '#7b2cbf',
+      '#ff85a1', '#ff9eb5', '#e0aaff', '#c060a1',
+      '#ff5e8a', '#d4a5ff', '#ff70a6', '#b388eb',
     ];
 
     const heartColors = [
@@ -586,6 +597,15 @@
       el.className = 'danmu-item danmu-' + sizeType;
       el.textContent = item.text;
 
+      // 爱心弹幕使用多样颜色
+      if (item.isHeart) {
+        el.classList.add('danmu-heart');
+        const color = heartDanmuColors[Math.floor(Math.random() * heartDanmuColors.length)];
+        el.style.color = color;
+        el.style.fontSize = (20 + Math.random() * 16) + 'px';
+        el.style.textShadow = `0 0 8px ${color}aa, 0 0 16px ${color}66`;
+      }
+
       const containerHeight = danmuContainer.offsetHeight;
       const top = Math.random() * (containerHeight - 40) + 10;
       el.style.top = top + 'px';
@@ -628,10 +648,10 @@
     document.head.appendChild(styleSheet);
 
     function startDanmu() {
-      for (let i = 0; i < 6; i++) {
-        setTimeout(createDanmu, i * 300);
+      for (let i = 0; i < 10; i++) {
+        setTimeout(createDanmu, i * 200);
       }
-      danmuTimer = setInterval(createDanmu, 600 + Math.random() * 400);
+      danmuTimer = setInterval(createDanmu, 300 + Math.random() * 200);
     }
 
     // ========== 飘动心形 ==========
@@ -708,7 +728,7 @@
 
     async function doNativeShare() {
       const shareData = {
-        title: '七夕快乐💗',
+        title: '汪 · 七夕快乐 · 彦',
         text: '送你一份七夕祝福，愿你被温柔以待~',
         url: window.location.href,
       };
@@ -795,16 +815,26 @@
     startDanmu();
     startFloatingHearts();
 
-    // 首次交互自动播放音乐
-    function firstInteraction() {
-      if (!isMusicPlaying) {
-        playMusic();
-      }
-      document.removeEventListener('touchstart', firstInteraction);
-      document.removeEventListener('click', firstInteraction);
+    // 进入网页自动播放音乐
+    function autoPlayMusic() {
+      bgm.play().then(() => {
+        musicBtn.classList.add('playing');
+        isMusicPlaying = true;
+      }).catch(() => {
+        // 浏览器阻止自动播放，首次交互后立即播放
+        const resume = () => {
+          bgm.play().then(() => {
+            musicBtn.classList.add('playing');
+            isMusicPlaying = true;
+          }).catch(() => {});
+          document.removeEventListener('touchstart', resume);
+          document.removeEventListener('click', resume);
+        };
+        document.addEventListener('touchstart', resume, { once: true });
+        document.addEventListener('click', resume, { once: true });
+      });
     }
-    document.addEventListener('touchstart', firstInteraction, { once: true });
-    document.addEventListener('click', firstInteraction, { once: true });
+    autoPlayMusic();
   </script>
 </body>
 </html>
