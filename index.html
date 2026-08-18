@@ -723,7 +723,7 @@
       });
 
       // 第二阶段：全部藏头诗出场完毕后再开始自由弹幕
-      // 最后一条藏头诗出场时间 = (7-1) * 500ms = 3000ms，延后 3100ms 启动
+      // 最后一条藏头诗出场时间 = (7-1) * 500ms = 3000ms，延后 3300ms 启动
       // 藏头诗单条动画 12000ms，所以 12 秒内都避开其轨道
       acrosticActiveUntil = pageStartTime + 15000;
       setTimeout(() => {
@@ -731,7 +731,7 @@
           setTimeout(createDanmu, i * 250);
         }
         danmuTimer = setInterval(createDanmu, 300 + Math.random() * 200);
-      }, 3100);
+      }, 3300);
     }
 
     // ========== 飘动心形 ==========
