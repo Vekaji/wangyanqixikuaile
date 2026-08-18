@@ -604,7 +604,7 @@
       }
 
       const containerHeight = danmuContainer.offsetHeight;
-      const top = Math.random() * (containerHeight - 40) + 10;
+      const top = getFreeTop();
       el.style.top = top + 'px';
 
       const fromRight = Math.random() > 0.25;
@@ -655,6 +655,25 @@
       { text: '乐拥好梦福常绵', size: 'large' },
     ];
 
+    // 藏头诗占用的纵向轨道（百分比），自由弹幕避开这些位置
+    const acrosticTracks = [0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75];
+    // 前 12 秒内（藏头诗还在屏幕上），自由弹幕避开藏头诗轨道
+    let acrosticActiveUntil = 12000;
+
+    function getFreeTop() {
+      const containerHeight = danmuContainer.offsetHeight;
+      // 如果藏头诗仍在屏幕，避开其轨道（±6% 容差）
+      if (Date.now() < acrosticActiveUntil) {
+        const excluded = acrosticTracks.map(t => (t * containerHeight));
+        for (let attempt = 0; attempt < 20; attempt++) {
+          const top = Math.random() * (containerHeight - 40) + 10;
+          const ok = excluded.every(et => Math.abs(top - et) > containerHeight * 0.06);
+          if (ok) return top;
+        }
+      }
+      return Math.random() * (containerHeight - 40) + 10;
+    }
+
     function createSpecificDanmu(item, topPercent) {
       const el = document.createElement('div');
       el.className = 'danmu-item danmu-' + (item.size || 'large');
@@ -672,6 +691,8 @@
       setTimeout(() => el.remove(), duration + 600);
     }
 
+    let pageStartTime = Date.now();
+
     function startDanmu() {
       // 第一阶段：藏头诗阶梯式出现
       acrosticList.forEach((item, i) => {
@@ -681,13 +702,16 @@
         }, i * 500);
       });
 
-      // 第二阶段：1秒后开始自由弹幕
+      // 第二阶段：全部藏头诗出场完毕后再开始自由弹幕
+      // 最后一条藏头诗出场时间 = (7-1) * 500ms = 3000ms，加 500ms 缓冲
+      // 藏头诗单条动画 12000ms，所以 12 秒内都避开其轨道
+      acrosticActiveUntil = pageStartTime + 15000;
       setTimeout(() => {
         for (let i = 0; i < 6; i++) {
           setTimeout(createDanmu, i * 250);
         }
         danmuTimer = setInterval(createDanmu, 300 + Math.random() * 200);
-      }, 1000);
+      }, (acrosticList.length - 1) * 500 + 500);
     }
 
     // ========== 飘动心形 ==========
