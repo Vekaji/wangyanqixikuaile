@@ -604,10 +604,11 @@
       }
 
       const containerHeight = danmuContainer.offsetHeight;
-      const top = getFreeTop();
+      const fromRight = Math.random() > 0.25;
+      const direction = fromRight ? 'left' : 'right';
+      const top = getFreeTop(direction);
       el.style.top = top + 'px';
 
-      const fromRight = Math.random() > 0.25;
       const duration = 8000 + Math.random() * 8000;
 
       if (fromRight) {
@@ -657,20 +658,39 @@
 
     // 藏头诗占用的纵向轨道（百分比），自由弹幕避开这些位置
     const acrosticTracks = [0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75];
-    // 前 12 秒内（藏头诗还在屏幕上），自由弹幕避开藏头诗轨道
     let acrosticActiveUntil = 12000;
 
-    function getFreeTop() {
+    // 记录当前活跃弹幕的轨道，用于避免重叠
+    const activeTracks = []; // { top, dir, spawnTime }
+
+    function getFreeTop(direction) {
       const containerHeight = danmuContainer.offsetHeight;
-      // 如果藏头诗仍在屏幕，避开其轨道（±6% 容差）
-      if (Date.now() < acrosticActiveUntil) {
-        const excluded = acrosticTracks.map(t => (t * containerHeight));
-        for (let attempt = 0; attempt < 20; attempt++) {
-          const top = Math.random() * (containerHeight - 40) + 10;
-          const ok = excluded.every(et => Math.abs(top - et) > containerHeight * 0.06);
-          if (ok) return top;
+      const now = Date.now();
+      // 清理超过 4 秒的记录
+      for (let i = activeTracks.length - 1; i >= 0; i--) {
+        if (now - activeTracks[i].spawnTime > 4000) activeTracks.splice(i, 1);
+      }
+      const minGap = containerHeight * 0.09; // 最小间距 9%
+      for (let attempt = 0; attempt < 25; attempt++) {
+        const top = Math.random() * (containerHeight - 40) + 10;
+        // 避开藏头诗轨道
+        let ok = true;
+        if (now < acrosticActiveUntil) {
+          const excluded = acrosticTracks.map(t => (t * containerHeight));
+          ok = excluded.every(et => Math.abs(top - et) > containerHeight * 0.06);
+        }
+        if (!ok) continue;
+        // 避开同方向刚出现的弹幕
+        ok = activeTracks.every(t =>
+          !(t.dir === direction && Math.abs(t.top - top) < minGap)
+        );
+        if (ok) {
+          activeTracks.push({ top, dir: direction, spawnTime: now });
+          return top;
         }
       }
+      // 找不到合适位置就随机给一个
+      activeTracks.push({ top: Math.random() * (containerHeight - 40) + 10, dir: direction, spawnTime: now });
       return Math.random() * (containerHeight - 40) + 10;
     }
 
@@ -703,7 +723,7 @@
       });
 
       // 第二阶段：全部藏头诗出场完毕后再开始自由弹幕
-      // 最后一条藏头诗出场时间 = (7-1) * 500ms = 3000ms，加 500ms 缓冲
+      // 最后一条藏头诗出场时间 = (7-1) * 500ms = 3000ms，延后 3100ms 启动
       // 藏头诗单条动画 12000ms，所以 12 秒内都避开其轨道
       acrosticActiveUntil = pageStartTime + 15000;
       setTimeout(() => {
@@ -711,7 +731,7 @@
           setTimeout(createDanmu, i * 250);
         }
         danmuTimer = setInterval(createDanmu, 300 + Math.random() * 200);
-      }, (acrosticList.length - 1) * 500 + 500);
+      }, 3100);
     }
 
     // ========== 飘动心形 ==========
